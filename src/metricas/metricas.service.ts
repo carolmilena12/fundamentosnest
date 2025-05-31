@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMetricaDto } from './dto/create-metrica.dto';
 import { UpdateMetricaDto } from './dto/update-metrica.dto';
-import { Repository } from 'typeorm';
+import { Between, Like, Repository } from 'typeorm';
 import { Metrica } from './entities/metrica.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { GetAllMetricasDTO } from './dto/getAll-metricas.dto';
+import { GetOneMetricaDTO } from './dto/getOne-metrica.dto';
 
 @Injectable()
 export class MetricasService {
@@ -25,14 +27,58 @@ constructor(
     return resultMetrica
   }
 
-  findAll() {
-    return `This action returns all metricas`;
+
+
+  async findAll(getAllMetricasDTO: GetAllMetricasDTO):Promise<Metrica[]> {
+    const where: any = {}
+
+    // verificar si llega ruta
+    if (getAllMetricasDTO.ruta) {
+      where.ruta = Like(`%${getAllMetricasDTO.ruta}%`);
+    }
+    // verificar si llega metodo
+    if (getAllMetricasDTO.metodo) {
+      where.metodo = getAllMetricasDTO.metodo;
+    }
+  // verificar si llega usuarioId
+    if (getAllMetricasDTO.usuarioId) {
+      where.usuarioId = getAllMetricasDTO.usuarioId;
+    }
+    // verificar si llega fechaInicio y fechaFinal
+    if (getAllMetricasDTO.fechaInicio && getAllMetricasDTO.fechaFinal) {
+      where.timestamp = Between(
+        new Date(getAllMetricasDTO.fechaInicio),
+        new Date(getAllMetricasDTO.fechaFinal)
+      );
+    }
+
+    const result = this.metricasRepo.find({
+      where,
+      order: {timestamp: 'DESC'}
+    })
+    return result;
+  }
+ 
+
+ async findOne(getOneMetricaDTO: GetOneMetricaDTO): Promise<any> {
+    const result = this.metricasRepo.find({
+      where: {
+        id: getOneMetricaDTO.id
+      }
+    });
+    return result;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} metrica`;
-  }
+  async getResumenMetodos () : Promise<{metodo: string; count: number}[]> {
+    const result = this.metricasRepo.createQueryBuilder('metrica')
+                                    .select('metrica.metodo', 'metodo')
+                                    .addSelect('COUNT(*)', 'count')
+                                    .groupBy('metrica.metodo')
+                                    .getRawMany()
 
+    return result;
+  }
+ 
   update(id: number, updateMetricaDto: UpdateMetricaDto) {
     return `This action updates a #${id} metrica`;
   }
