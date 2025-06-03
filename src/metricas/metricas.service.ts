@@ -6,6 +6,7 @@ import { Metrica } from './entities/metrica.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GetAllMetricasDTO } from './dto/getAll-metricas.dto';
 import { GetOneMetricaDTO } from './dto/getOne-metrica.dto';
+import {v4 as uuidv4} from 'uuid'
 
 @Injectable()
 export class MetricasService {
@@ -14,20 +15,22 @@ constructor(
     private metricasRepo: Repository<Metrica>
   ) {}
 
-  async create(createMetricaDto: CreateMetricaDto) {
+async create(createMetricaDto: CreateMetricaDto) {
 
-    const metrica = this.metricasRepo.create({
-      ruta: createMetricaDto.ruta,
-      metodo: createMetricaDto.metodo,
-      usuarioId: createMetricaDto.usuarioId,
-      timestamp: new Date().toISOString()
-    })
+    const metrica = this.metricasRepo.create(
+      {
+        ...createMetricaDto,
+        timestamp: new Date().toISOString()
+      }
+  )
 
     const resultMetrica = await this.metricasRepo.save(metrica)
     return resultMetrica
   }
 
-
+generarRequestId(): string {
+    return uuidv4();
+  }
 
   async findAll(getAllMetricasDTO: GetAllMetricasDTO):Promise<Metrica[]> {
     const where: any = {}

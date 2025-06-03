@@ -1,19 +1,39 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { TipoMetrica } from '../enums/metricas.type.enum';
+import { MetodosHttp } from '../enums/metricas.metodos.http.enum';
+
 
 @Entity()
 export class Metrica {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @Column()
-  ruta: string;
+    @Column()
+    requestId: string; // UID
 
-  @Column()
-  metodo: string;
+    @Column({
+        enum: TipoMetrica
+    })
+    type: TipoMetrica;
 
-  @Column()
-  timestamp: Date;
+    @Column()
+    ruta: string;
 
-  @Column({ nullable: true })
-  usuarioId?: string;
+    @Column({
+        enum: MetodosHttp
+    })
+    metodo: MetodosHttp;
+
+    @Column({nullable:true})
+    statusCode?: number;
+
+    @Column({nullable: true})
+    duracion?: number; // finish
+    
+    @Column({nullable: true})
+    usuarioId?: string;
+    
+    @Column()
+    timestamp: string;
 }
+ 
